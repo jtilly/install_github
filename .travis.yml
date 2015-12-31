@@ -3,6 +3,10 @@
 # use c as catch-all language
 language: c
 
+branches:
+  only:
+    - gh-pages
+
 # use cache
 cache:
   directories:
