@@ -3,7 +3,8 @@
 #' install_github is a very lightweight function with no dependencies
 #' that installs R packages from GitHub.
 #' 
-#' @param repo identifies the GitHub repository, i.e. username/repo
+#' @param repo identifies the GitHub repository, i.e. username/repo. Also flexibly 
+#'   accepts arguments of the form username/repo@branch.
 #' @param branch identifies the branch
 #' @param dependencies is a vector that indicates which type of additional 
 #'   packages are also to be installed. It can include any of the values in 
@@ -17,10 +18,12 @@
 #'   \code{auto}, this function will make an educated guess.
 #' @examples
 #' \dontrun{install_github("jtilly/matchingR")}
-install_github = function(repo, branch = "master", dependencies = TRUE, method = "auto") {
+install_github = function(repo, 
+                          branch = if (grepl("@", repo)) gsub(".*@", "", repo) else "master", 
+                          dependencies = TRUE, method = "auto") {
     
     # unix system?
-    unix = Sys.info()["sysname"]=="Darwin" || Sys.info()["sysname"]=="Linux"
+    unix = Sys.info()["sysname"] %in% c("Darwin", "Linux")
     
     # select a method to download files over https
     if(method == "auto") {
@@ -45,21 +48,20 @@ install_github = function(repo, branch = "master", dependencies = TRUE, method =
     }
     
     # assemble URL
-    url = paste0("https://github.com/", repo, "/archive/", branch, ".zip")
+    url = paste0("https://github.com/", gsub("@.*", "", repo), "/archive/", branch, ".zip")
     
     # create a temporary directory
     tmpdir = tempdir()
     pkg.zip = file.path(tmpdir, paste0(branch, ".zip"))
     
     # download the zip archive from GitHub
-    message(paste("Downloading", url, "using", method))
-    if (method == "curl") {
-        # follow redirects with curl requires passing in the -L option
-        download.file(url = url, destfile = pkg.zip, method = method, extra = "-L")
-    } else {
-        download.file(url = url, destfile = pkg.zip, method = method)
-    }
-    message(paste("Saved as", pkg.zip))
+    message("Downloading ", url, " using ", method)
+    # follow redirects with curl requires passing in the -L option
+    download.file(url = url, destfile = pkg.zip, 
+                  method = method, 
+                  extra = if (method == "curl") "-L" else getOption("download.file.extra"))
+    
+    message("Saved as ", pkg.zip)
     if (!file.exists(pkg.zip)) {
         stop("Download failed.")
     }
@@ -67,13 +69,13 @@ install_github = function(repo, branch = "master", dependencies = TRUE, method =
     # extract the archive
     pkg.root = file.path(tmpdir, branch)
     unzip(pkg.zip, overwrite = TRUE, exdir = pkg.root)
-    message(paste("Extracted package to", pkg.root))
+    message("Extracted package to ", pkg.root)
     
     # assemble path to downloaded package
     pkg.dir = file.path(pkg.root, list.files(pkg.root)[1])
     
     # default dependencies
-    if(dependencies == TRUE) {
+    if (isTRUE(dependencies)) {
         dependencies = c("Depends", "Imports", "LinkingTo")
     }
     
@@ -86,22 +88,15 @@ install_github = function(repo, branch = "master", dependencies = TRUE, method =
         
         # install dependencies that aren't already installed
         deps = deps[!(deps %in% c("R", rownames(installed.packages())))]
-        if(length(deps) > 0) {
-            message(paste("Also installing:", paste(deps)))
+        if(length(deps)) {
+            message("Also installing: ", paste(deps))
             install.packages(deps)
         }
     }
     
     # check if the package has a configure / cleanup script
-    if(unix) {
-        if(file.exists(file.path(pkg.dir, "configure"))) {
-            Sys.chmod(file.path(pkg.dir, "configure"), mode = "0755", use_umask = TRUE)
-        }
-        
-        if(file.exists(file.path(pkg.dir, "cleanup"))) {
-            Sys.chmod(file.path(pkg.dir, "cleanup"), mode = "0755", use_umask = TRUE)
-        }
-    }
+    if (file.exists(file.path(pkg.dir, if (unix) "configure" else "cleanup")))
+      Sys.chmod(file.path(pkg.dir, "configure"), mode = "0755", use_umask = TRUE)
     
     # install the package
     install.packages(pkg.dir, repos = NULL, type = "source")
