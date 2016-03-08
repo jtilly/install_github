@@ -98,7 +98,7 @@ install_github = function(repo,
     # chmod on unix type systems
     if (unix) {
         for(script in c("configure", "cleanup")) {
-            if (file.exists(file.path(pkg.dir, script)) {
+            if (file.exists(file.path(pkg.dir, script))) {
                 Sys.chmod(file.path(pkg.dir, script), mode = "0755", use_umask = TRUE)
             }
         }
