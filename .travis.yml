@@ -27,6 +27,7 @@ install:
 # install jtilly/matchingR
 script:
   - Rscript -e 'options(warn = 2); source("http://jtilly.io/install_github/install_github.R"); install_github("jtilly/matchingR")'
+  - Rscript -e 'options(warn = 2); source("http://jtilly.io/install_github/install_github.R"); install_github("jtilly/matchingR@master")'
 
 # send e-mails if stuff breaks / changes
 notifications:
