@@ -5,7 +5,7 @@
 #' 
 #' @param repo identifies the GitHub repository, i.e. username/repo. Also flexibly 
 #'   accepts arguments of the form username/repo@branch.
-#' @param branch identifies the branch
+#' @param branch identifies the branch (optional)
 #' @param dependencies is a vector that indicates which type of additional 
 #'   packages are also to be installed. It can include any of the values in 
 #'   \code{c("Depends", "Imports", "LinkingTo", "Suggests", "Enhances")}. A 
@@ -94,9 +94,15 @@ install_github = function(repo,
         }
     }
     
-    # check if the package has a configure / cleanup script
-    if (file.exists(file.path(pkg.dir, if (unix) "configure" else "cleanup")))
-      Sys.chmod(file.path(pkg.dir, "configure"), mode = "0755", use_umask = TRUE)
+    # check if the package has a configure / cleanup script and set
+    # chmod on unix type systems
+    if (unix) {
+        for(script in c("configure", "cleanup")) {
+            if (file.exists(file.path(pkg.dir, script)) {
+                Sys.chmod(file.path(pkg.dir, script), mode = "0755", use_umask = TRUE)
+            }
+        }
+    }
     
     # install the package
     install.packages(pkg.dir, repos = NULL, type = "source")
