@@ -4,7 +4,7 @@ Simple lightweight installer for R packages from GitHub. This function imitates 
 
 ### Example
 
-```{r}
+```r
 source("http://jtilly.io/install_github/install_github.R")
 install_github("jtilly/matchingR")
 ```
