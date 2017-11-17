@@ -29,7 +29,7 @@ install_github = function(repo,
     if(method == "auto") {
         
         if(unix) {
-            if(capabilities("libcurl")) {
+            if(file.exists(Sys.which("libcurl"))) {
                 method = "libcurl"
             } else if (file.exists(Sys.which("wget"))) {
                 method = "wget"
