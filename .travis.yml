@@ -15,7 +15,7 @@ cache:
 # install r-base-dev:
 addons:
   apt:
-    sources: r-packages-precise
+    sources: r-packages-trusty
     packages: r-base-dev
     
 # set up R environment
