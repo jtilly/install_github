@@ -18,21 +18,21 @@
 #'   \code{auto}, this function will make an educated guess.
 #' @examples
 #' \dontrun{install_github("jtilly/matchingR")}
-if (getRversion() < '3.2.0') {
-  trimws = function (x, which = c("both", "left", "right")) {
-    which <- match.arg(which)
-    mysub <- function(re, x) sub(re, "", x, perl = TRUE)
-    if (which == "left") 
-        return(mysub("^[ \\t\\r\\n]+", x))
-    if (which == "right") 
-        return(mysub("[ \\t\\r\\n]+$", x))
-    mysub("[ \\t\\r\\n]+$", mysub("^[ \\t\\r\\n]+", x))
-  }
-}
-
 install_github = function(repo, 
                           branch = if (grepl("@", repo)) gsub(".*@", "", repo) else "master", 
                           dependencies = TRUE, method = "auto") {
+                            
+    if (getRversion() < "3.2.0") {
+      trimws = function (x, which = c("both", "left", "right")) {
+        which = match.arg(which)
+        mysub = function(re, x) sub(re, "", x, perl = TRUE)
+        if (which == "left") 
+            return(mysub("^[ \\t\\r\\n]+", x))
+        if (which == "right") 
+            return(mysub("[ \\t\\r\\n]+$", x))
+        mysub("[ \\t\\r\\n]+$", mysub("^[ \\t\\r\\n]+", x))
+      }
+    }
     
     # unix system?
     unix = Sys.info()["sysname"] %in% c("Darwin", "Linux")
